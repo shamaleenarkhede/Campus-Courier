@@ -8,6 +8,7 @@ using System.Web.Security;
 using System.Web.SessionState;
 using System.Data.Entity;
 using CampusCourier.Models;
+using CampusCourier.Logic;
 
 namespace CampusCourier
 {
@@ -21,6 +22,9 @@ namespace CampusCourier
 
             //Initialize menu database
             Database.SetInitializer(new ProductDatabaseInitializer());
+
+            RoleActions roleActions = new RoleActions();
+            roleActions.AddUserAndRole();
         }
     }
 }

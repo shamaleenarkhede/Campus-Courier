@@ -6,6 +6,9 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using CampusCourier.Models;
 using CampusCourier.Logic;
+using System.Data.Entity;
+using System.Configuration;
+using System.Data.SqlClient;
 
 namespace CampusCourier.Checkout
 {
@@ -29,16 +32,8 @@ namespace CampusCourier.Checkout
                     Session["payerId"] = PayerID;
 
                     var myOrder = new Orders();
-             //       myOrder.OrderDate = Convert.ToDateTime(decoder["TIMESTAMP"].ToString());
+         
                     myOrder.Username = User.Identity.Name;
-                    //myOrder.FirstName = decoder["FIRSTNAME"].ToString();
-                    //myOrder.LastName = decoder["LASTNAME"].ToString();
-                    //myOrder.Address = decoder["SHIPTOSTREET"].ToString();
-                    //myOrder.City = decoder["SHIPTOCITY"].ToString();
-                    //myOrder.State = decoder["SHIPTOSTATE"].ToString();
-                    //myOrder.PostalCode = decoder["SHIPTOZIP"].ToString();
-                    //myOrder.Country = decoder["SHIPTOCOUNTRYCODE"].ToString();
-                    //myOrder.Email = decoder["EMAIL"].ToString();
                     myOrder.Total = Convert.ToDecimal(decoder["AMT"].ToString());
 
                     // Verify total payment amount as set on CheckoutStart.aspx.
@@ -74,18 +69,53 @@ namespace CampusCourier.Checkout
                             // Create a new OrderDetail object.
                             var myOrderDetail = new OrderDetail();
                             myOrderDetail.OrderId = myOrder.OrderId;
-                         //   myOrderDetail.Username = User.Identity.Name;
+                            myOrderDetail.CustName = User.Identity.Name;
                             myOrderDetail.ProductId = myOrderList[i].ProductId;
-                           myOrderDetail.Quantity = myOrderList[i].Quantity;
+                            myOrderDetail.Quantity = myOrderList[i].Quantity;
                             myOrderDetail.UnitPrice = myOrderList[i].Product.UnitPrice;
 
                             // Add OrderDetail to DB.
                             _db.OrderDetails.Add(myOrderDetail);
                             _db.SaveChanges();
                         }
+                        
 
-                        // Set OrderId.
+                        // Set OrderId. Remove this if it wont work
                         Session["currentOrderId"] = myOrder.OrderId;
+
+                        //Adding data to orders
+
+                        List<CartItem> ordersdatalist = usersShoppingCart.GetCartItems();
+                        for (int i = 0; i < ordersdatalist.Count; i++)
+                        {
+                            var ordersdata = new Orders();
+                            ordersdata.OrderId = myOrder.OrderId;
+                            ordersdata.Quantity = ordersdatalist[i].Quantity;
+                            int productid = ordersdatalist[i].ProductId;
+                            ordersdata.RestName = ordersdatalist[i].Product.Restaurant.RestaurantName;
+
+                            int location = Convert.ToInt32(ordersdatalist[i].Product.RestaurantID);
+
+                            string Query = "SELECT LocationName from Locations WHERE LocationID ='" + location + "'";
+                            string connectionstring = ConfigurationManager.ConnectionStrings["CampusCourier"].ConnectionString;
+                            SqlConnection conn = new SqlConnection(connectionstring);
+                            SqlCommand comm = new SqlCommand(Query, conn);
+                            conn.Open();
+                            SqlDataReader nwReader = comm.ExecuteReader();
+                               
+                                while (nwReader.Read())
+                                {
+                                    ordersdata.Location = (string)nwReader["LocationName"];
+                                  
+                                }
+                                nwReader.Close();
+                                conn.Close();
+                          
+                                ordersdata.Total = Convert.ToDecimal(ordersdatalist[i].Product.UnitPrice);
+                                ordersdata.Status = "Waiting For Delivery";
+                                _db.Orders.Add(ordersdata);
+                                _db.SaveChanges();
+                            }
 
                         // Display Order information.
                         List<Orders> orderList = new List<Orders>();
@@ -96,6 +126,8 @@ namespace CampusCourier.Checkout
                         // Display OrderDetails.
                         OrderItemList.DataSource = myOrderList;
                         OrderItemList.DataBind();
+                        Session["userCheckoutCompleted"] = "true";
+                        Response.Redirect("~/Checkout/CheckoutComplete.aspx");
                     }
                 }
                 else
@@ -105,11 +137,6 @@ namespace CampusCourier.Checkout
             }
         }
 
-        protected void CheckoutConfirm_Click(object sender, EventArgs e)
-        {
-            Session["userCheckoutCompleted"] = "true";
-            Response.Redirect("~/Checkout/CheckoutComplete.aspx");
-        }
-
+      
     }
 }

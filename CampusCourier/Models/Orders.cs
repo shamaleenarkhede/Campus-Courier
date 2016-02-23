@@ -46,6 +46,8 @@ namespace CampusCourier.Models
         [ScaffoldColumn(false)]
         public bool HasBeenShipped { get; set; }
 
+        public string CourierEmail { get; set; }
+
 
 
 

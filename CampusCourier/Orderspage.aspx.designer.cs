@@ -13,6 +13,15 @@ namespace CampusCourier {
     public partial class Orderspage {
         
         /// <summary>
+        /// Orders control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.LinqDataSource Orders;
+        
+        /// <summary>
         /// ordersGrid control.
         /// </summary>
         /// <remarks>
