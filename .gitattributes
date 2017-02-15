@@ -2,8 +2,6 @@
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
 * text=auto
-$ cat .gitattributes
-*.rb linguist-language=C#
 ###############################################################################
 # Set default behavior for command prompt diff.
 #
@@ -62,5 +60,3 @@ $ cat .gitattributes
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
-$ cat .gitattributes
-*.rb linguist-language=C#
